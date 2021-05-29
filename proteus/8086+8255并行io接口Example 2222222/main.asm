@@ -1,0 +1,82 @@
+; 8   1000
+; 9   1001
+; a   1010
+; b   1011
+
+; 8   1000
+; 9   1001
+; a   1010
+; b   1011
+
+
+
+; 0   0000
+; 2   0010
+; 4   0100
+; 6  0110
+
+
+; 0   0000
+; 4   0100
+; 8   1000
+; c   1100
+DATA SEGMENT  ;数据段
+   LED DB 3fh,06h,5bh,4fh,66h,6dh,7dh,07h,7fh,6fh ;段码
+   PORTA equ 00h
+   PORTB equ 02h
+   PORTC equ 04h
+   CS8255 equ 06h
+   REGIS equ 10010000B ; A口输入 B口输出
+DATA ENDS
+
+EXTRA SEGMENT
+EXTRA ENDS
+
+STACK SEGMENT PARA STACK 'STACK' ; 堆空间
+STAPN DB 100 DUP (00H)
+TOP equ LENGTH STAPN
+STACK ENDS
+
+
+
+CODE    SEGMENT PUBLIC 'CODE'
+MAIN PROC FAR 
+        ASSUME CS:CODE,DS:DATA,ES:EXTRA,SS:STACK
+
+START:
+		  MOV AX,DATA
+		  MOV DS,AX
+		  
+		  MOV AX,EXTRA
+		  MOV ES,AX
+		  
+		  MOV AX,STACK
+		  MOV SS,AX
+		 ; Write your code here
+		  MOV DX,CS8255
+		  MOV AL,REGIS
+		  OUT DX,AL
+M_LOOP:	 MOV DX,PORTA
+		  IN AL,DX
+		  AND AL,0FH
+		  MOV BX,OFFSET LED
+		  XLAT
+		  MOV CX,40H
+		  CALL DELAY
+		  MOV DX,PORTB
+		  OUT DX,AL
+		  JMP M_LOOP
+		  
+
+		  RET	 
+MAIN ENDP	
+
+DELAY PROC
+	 PUSH CX
+	 LOOP $
+	 POP CX
+	 RET
+DELAY ENDP	
+CODE ENDS
+
+END MAIN
